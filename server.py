@@ -4,8 +4,12 @@ from markupsafe import escape
 from .cache import LRUCache
 from .api import upsert, fetch
 
+options = {
+    'capacity': 2,     # default 100
+    'staleTime': 5*60   # 5 mins (default immediate)
+}
 
-lruCache = LRUCache(2)
+lruCache = LRUCache(options)
 
 app = Flask(__name__)
 

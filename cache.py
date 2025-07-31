@@ -1,14 +1,15 @@
 from moment import moment
 
 class ListNode:
-    def __init__(self, key, val):
+    def __init__(self, key, val, staleTime = 0):
         self.key = key
         self.val = val
-        self.staleTime = moment().unix() + 10 # staleTime is 5 mins(5 * 60)
+        self.staleTime = moment().unix() + staleTime # default staleTime is immediate
 
 class LRUCache:
-    def __init__(self, capacity):
-        self.capacity = capacity
+    def __init__(self, options = { 'staleTime': 0, 'capacity': 100 }):
+        self.staleTime = options.staleTime
+        self.capacity = options.capacity
         self.hashMap = {}
         self.head = ListNode(0,0)
         self.tail = ListNode(0,0)
@@ -28,7 +29,7 @@ class LRUCache:
                 self.remove(evicted)
                 del self.hashMap[evicted.key]
         # add new node to hashmap and head of cache
-        node = ListNode(key, val)
+        node = ListNode(key, val, self.staleTime)
         self.add(node)
         self.hashMap[key] = node
         return 0
