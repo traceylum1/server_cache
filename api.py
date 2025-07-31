@@ -1,33 +1,51 @@
 import psycopg2
+from psycopg2 import Error
 
-def upsert(key, val):
-    conn = psycopg2.connect("dbname=tracey user=tracey")
+def db_upsert(key, val):
+    conn = None
+    cur = None
+    try:
+        conn = psycopg2.connect("dbname=tracey user=tracey")
+        cur = conn.cursor()
 
-    cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO cachetest (key, value)
+            VALUES (%s, %s)
+            ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+        """, (key, val))
 
-    cur.execute("INSERT INTO cachetest (key, value) VALUES (%s, %s)",
-                 (key, val))
+        conn.commit()
+        print('### Finished upserting to db')
 
-    conn.commit()
+    except Error as e:
+        print("### Error during upsert:", e)
 
-    cur.close()
-    conn.close()
-    print('### finished upserting to db')
-    return 0
+    finally:
+        if cur is not None:
+            cur.close()
+        if conn is not None:
+            conn.close()
 
 
-def fetch(key):
-    conn = psycopg2.connect("dbname=tracey user=tracey")
-
-    cur = conn.cursor()
-
-    cur.execute("SELECT value FROM cachetest WHERE key=%s", (key,))
-    res = cur.fetchone()[0]
-    print('res', res)
-
-    conn.commit()
-    
-    cur.close()
-    conn.close()
-    print('### finished fetching from db')
-    return res
+def db_fetch(key):
+    conn = None
+    cur = None
+    try:
+        conn = psycopg2.connect("dbname=tracey user=tracey")
+        cur = conn.cursor()
+        cur.execute("SELECT value FROM cachetest WHERE key = %s", (key,))
+        row = cur.fetchone()
+        if row is None:
+            print('### Key not found in database.')
+            return None
+        print('res', row[0])
+        print('### Finished fetching from db')
+        return row[0]
+    except Error as e:
+        print('### Error fetching record:', e)
+        return None
+    finally:
+        if cur is not None:
+            cur.close()
+        if conn is not None:
+            conn.close()
