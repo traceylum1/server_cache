@@ -1,5 +1,4 @@
 from flask import Flask
-from moment import moment
 from markupsafe import escape
 from .cache import LRUCache
 from .api import db_upsert, db_fetch

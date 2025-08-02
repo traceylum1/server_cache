@@ -37,7 +37,7 @@ class LRUCache:
             # Update existing node
             self.remove(node)
 
-        elif len(self.hashMap) == self.capacity:
+        elif self.is_full():
             # Evict least recently used node
             print('Evicting LRU')
             lru = self.tail.prev
@@ -59,7 +59,7 @@ class LRUCache:
             print('Key not in cache')
             return None
         
-        if node.is_stale:
+        if node.is_stale():
             print('Record stale')
             self.remove(node)
             del self.hashMap[key]
@@ -82,3 +82,9 @@ class LRUCache:
         next = node.next
         prev.next = next
         next.prev = prev
+
+    def is_empty(self):
+        return len(self.hashMap) == 0
+    
+    def is_full(self):
+        return len(self.hashMap) == self.capacity
